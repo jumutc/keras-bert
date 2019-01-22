@@ -70,4 +70,9 @@ test_data = gen_batch_inputs_nlg(
             swap_sentence_rate=1.0,
         )
 
-print(model.predict(test_data[0]))
+inputs = test_data[0]
+outputs = model.predict(inputs)
+
+for input, output in zip(inputs, outputs):
+    print("INPUT: %s -- OUTPUT: %s" % ([token_dict[i] for i in input], [token_dict[o] for o in output]))
+
