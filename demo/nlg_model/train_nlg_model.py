@@ -15,6 +15,7 @@ input_df['expression'] = input_df['expression'].apply(tokenize)
 input_df = input_df[input_df['expression'].map(np.unique).map(len) > 2]
 input_df = input_df[input_df['expression'].map(len) <= seq_len//2]
 
+intents = input_df['intent'].values
 sentences = input_df['expression'].values
 print("Dataset shape: %s" % sentences.shape)
 
@@ -43,6 +44,7 @@ def _generator():
     while True:
         yield gen_batch_inputs_nlg(
             sentences,
+            intents,
             token_dict,
             token_list,
             mask_rate=0.1,
@@ -65,15 +67,22 @@ model.fit_generator(
 
 test_data = gen_batch_inputs_nlg(
             sentences,
+            intents,
             token_dict,
             token_list,
             mask_rate=0.1,
             swap_sentence_rate=1.0,
         )
 
-inputs = test_data[0]
-outputs = model.predict(inputs)
+for input in sentences[:20]:
+    tokens = ['[CLS]'] + input + ['[SEP]']
 
-for input, output in zip(inputs, outputs):
+    token_input = np.asarray([[token_dict[token] for token in tokens] + [0] * (512 - len(tokens))])
+    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (512 - len(tokens))])
+    mask_input = np.asarray([[0] * 512])
+
+    output = model.predict([token_input, seg_input, mask_input])[0]
+    output = np.argmax(output, axis=-1)[0]
+
     print("INPUT: %s -- OUTPUT: %s" % ([token_dict[i] for i in input], [token_dict[o] for o in output]))
 

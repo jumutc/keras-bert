@@ -212,10 +212,11 @@ def gen_batch_inputs(sentence_pairs,
 
 
 def gen_batch_inputs_nlg(sentences,
+                         intents,
                          token_dict,
                          token_list,
                          seq_len=512,
-                         mask_rate=0.15,
+                         mask_rate=0.3,
                          mask_mask_rate=0.8,
                          mask_random_rate=0.1,
                          swap_sentence_rate=1.0,
@@ -224,6 +225,7 @@ def gen_batch_inputs_nlg(sentences,
     """Generate a batch of inputs and outputs for training.
 
     :param sentences: A list of expressions.
+    :param intents: A lis of intents per expression
     :param token_dict: The dictionary containing special tokens.
     :param token_list: A list containing all tokens.
     :param seq_len: Length of the sequence.
@@ -237,6 +239,8 @@ def gen_batch_inputs_nlg(sentences,
     """
     test_sample = np.random.permutation(np.arange(len(sentences)))
     sentences = sentences[test_sample[:batch_size]]
+    intents = intents[test_sample[:batch_size]]
+
     if len(sentences) < batch_size:
         batch_size = len(sentences)
 
@@ -250,7 +254,7 @@ def gen_batch_inputs_nlg(sentences,
         mapped = indices[:]
         random.shuffle(mapped)
         for i in range(len(mapped)):
-            if indices[i] != mapped[i]:
+            if intents[indices[i]] != intents[mapped[i]]:
                 nsp_outputs[indices[i]] = 1.0
         mapping = {indices[i]: mapped[i] for i in range(len(indices))}
     # Generate MLM
