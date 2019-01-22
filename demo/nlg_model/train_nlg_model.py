@@ -31,7 +31,8 @@ model = get_model(
     token_num=len(token_dict),
     embed_dim=256,
     head_num=4,
-    feed_forward_dim=1024,
+    transformer_num=6,
+    feed_forward_dim=256,
     seq_len=seq_len,
 
 )
