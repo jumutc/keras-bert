@@ -1,13 +1,14 @@
 import random
+
 import keras
 import numpy as np
 import tensorflow as tf
-from keras_pos_embd import PositionEmbedding
 from keras_layer_normalization import LayerNormalization
-from keras_transformer import get_encoders
+from keras_pos_embd import PositionEmbedding
 from keras_transformer import get_custom_objects as get_encoder_custom_objects
-from .layers import (get_inputs, get_embedding, TokenEmbedding, EmbeddingSimilarity, Masked, Extract)
+from keras_transformer import get_encoders
 
+from .layers import (get_inputs, get_embedding, TokenEmbedding, EmbeddingSimilarity, Masked, Extract)
 
 TOKEN_PAD = ''  # Token for padding
 TOKEN_UNK = '<UNK>'  # Token for unknown words
@@ -208,3 +209,88 @@ def gen_batch_inputs(sentence_pairs,
     inputs = [np.asarray(x) for x in [token_inputs, segment_inputs, masked_inputs]]
     outputs = [np.asarray(np.expand_dims(x, axis=-1)) for x in [mlm_outputs, nsp_outputs]]
     return inputs, outputs
+
+
+def gen_batch_inputs_nlg(sentences,
+                         token_dict,
+                         token_list,
+                         seq_len=512,
+                         mask_rate=0.15,
+                         mask_mask_rate=0.8,
+                         mask_random_rate=0.1,
+                         swap_sentence_rate=1.0,
+                         batch_size=128,
+                         force_mask=True):
+    """Generate a batch of inputs and outputs for training.
+
+    :param sentences: A list of expressions.
+    :param token_dict: The dictionary containing special tokens.
+    :param token_list: A list containing all tokens.
+    :param seq_len: Length of the sequence.
+    :param mask_rate: The rate of choosing a token for prediction.
+    :param mask_mask_rate: The rate of replacing the token to `TOKEN_MASK`.
+    :param mask_random_rate: The rate of replacing the token to a random word.
+    :param swap_sentence_rate: The rate of swapping the second sentences.
+    :param batch_size: a batch_size to process
+    :param force_mask: At least one position will be masked.
+    :return: All the inputs and outputs.
+    """
+    test_sample = np.random.permutation(np.arange(len(sentences)))
+    sentences = sentences[test_sample[:batch_size]]
+    if len(sentences) < batch_size:
+        batch_size = len(sentences)
+
+    base_dict = get_base_dict()
+    unknown_index = token_dict[TOKEN_UNK]
+    # Generate sentence swapping mapping
+    nsp_outputs = np.zeros((batch_size,))
+    mapping = {}
+    if swap_sentence_rate > 0.0:
+        indices = [index for index in range(batch_size) if random.random() < swap_sentence_rate]
+        mapped = indices[:]
+        random.shuffle(mapped)
+        for i in range(len(mapped)):
+            if indices[i] != mapped[i]:
+                nsp_outputs[indices[i]] = 1.0
+        mapping = {indices[i]: mapped[i] for i in range(len(indices))}
+    # Generate MLM
+    token_inputs, segment_inputs, masked_inputs = [], [], []
+    mlm_outputs = []
+    for i in range(batch_size):
+        first, second = sentences[i], sentences[mapping.get(i, i)]
+        segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
+        tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
+        tokens = tokens[:seq_len]
+        tokens += [TOKEN_PAD] * (seq_len - len(tokens))
+        token_input, masked_input, mlm_output = [], [], []
+        has_mask = False
+        for token in tokens:
+            mlm_output.append(token_dict.get(token, unknown_index))
+            if token not in base_dict and random.random() < mask_rate:
+                has_mask = True
+                masked_input.append(1)
+                r = random.random()
+                if r < mask_mask_rate:
+                    token_input.append(token_dict[TOKEN_MASK])
+                elif r < mask_mask_rate + mask_random_rate:
+                    while True:
+                        token = random.choice(token_list)
+                        if token not in base_dict:
+                            token_input.append(token_dict[token])
+                            break
+                else:
+                    token_input.append(token_dict.get(token, unknown_index))
+            else:
+                masked_input.append(0)
+                token_input.append(token_dict.get(token, unknown_index))
+        if force_mask and not has_mask:
+            masked_input[1] = 1
+        token_inputs.append(token_input)
+        masked_inputs.append(masked_input)
+        segment_inputs.append(segment_input)
+        mlm_outputs.append(mlm_output)
+
+    inputs = [np.asarray(x) for x in [token_inputs, segment_inputs, masked_inputs]]
+    outputs = [np.asarray(np.expand_dims(x, axis=-1)) for x in [mlm_outputs, nsp_outputs]]
+    return inputs, outputs
+
