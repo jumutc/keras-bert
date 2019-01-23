@@ -1,5 +1,5 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs_nlg
-from keras_bert.bert import TOKEN_CLS, TOKEN_SEP
+from keras_bert.bert import TOKEN_CLS, TOKEN_SEP, TOKEN_MASK
 
 import pandas as pd
 import numpy as np
@@ -65,7 +65,7 @@ model.fit_generator(
     ],
 )
 
-model.save('bert_nlg.keras')
+model.save_weights('bert_nlg.hdf5')
 np.random.shuffle(sentences)
 
 test_data = gen_batch_inputs_nlg(
@@ -80,7 +80,7 @@ test_data = gen_batch_inputs_nlg(
 for input in sentences[:20]:
     tokens = [TOKEN_CLS] + input + [TOKEN_SEP]
 
-    token_input = np.asarray([[token_dict[token] for token in tokens] + [0] * (seq_len - len(tokens))])
+    token_input = np.asarray([[token_dict[token] for token in tokens] + [TOKEN_MASK] * (seq_len - len(tokens))])
     seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(tokens))])
     mask_input = np.asarray([[0] * seq_len])
 
