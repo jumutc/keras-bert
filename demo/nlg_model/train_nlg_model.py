@@ -87,6 +87,6 @@ for input in sentences[:20]:
     probabilities = np.max(output, axis=-1)[0]
     prob_mask = np.argwhere(probabilities > 0.5)
 
-    print("INPUT: %s" % [token_dict_rev[i] for i in input])
+    print("INPUT: %s" % input)
     print("OUTPUT: %s" % [token_dict_rev[o] for o in output[0]])
     print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in output[0][prob_mask]])
