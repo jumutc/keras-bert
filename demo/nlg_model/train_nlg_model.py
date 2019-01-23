@@ -88,5 +88,5 @@ for input in sentences[:20]:
     prob_mask = np.argwhere(probabilities > 0.5)
 
     print("INPUT: %s" % input)
-    print("OUTPUT: %s" % [token_dict_rev[o] for o in indices[0]])
-    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[0][prob_mask]])
+    print("OUTPUT: %s" % [token_dict_rev[o] for o in indices])
+    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[prob_mask]])
