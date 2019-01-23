@@ -30,8 +30,9 @@ for k, v in token_dict.items():
 for sentence in sentences:
     for token in sentence:
         if token not in token_dict:
-            token_dict[token] = len(token_dict)
-            token_dict_rev[len(token_dict)] = token
+            index = len(token_dict)
+            token_dict[token] = index
+            token_dict_rev[index] = token
 
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
