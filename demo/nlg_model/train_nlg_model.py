@@ -78,9 +78,9 @@ test_data = gen_batch_inputs_nlg(
         )
 
 for input in sentences[:20]:
-    tokens = [TOKEN_CLS] + input + [TOKEN_SEP]
+    tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 2)
 
-    token_input = np.asarray([[token_dict[token] for token in tokens] + [TOKEN_MASK] * (seq_len - len(tokens))])
+    token_input = np.asarray([token_dict[token] for token in tokens])
     seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(tokens))])
     mask_input = np.asarray([[0] * seq_len])
 
