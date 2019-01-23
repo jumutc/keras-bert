@@ -21,11 +21,18 @@ sentences = input_df['expression'].values
 print("Dataset shape: %s" % sentences.shape)
 
 token_dict = get_base_dict()  # A dict that contains some special tokens
+token_dict_rev = dict()
+
+for k, v in token_dict.items():
+    token_dict_rev[v] = k
+
 # Build token dictionary
 for sentence in sentences:
     for token in sentence:
         if token not in token_dict:
             token_dict[token] = len(token_dict)
+            token_dict_rev[len(token_dict)] = token
+
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
 # Build & train the model
@@ -68,24 +75,15 @@ model.fit_generator(
 model.save_weights('bert_nlg.hdf5')
 np.random.shuffle(sentences)
 
-test_data = gen_batch_inputs_nlg(
-            sentences,
-            intents,
-            token_dict,
-            token_list,
-            mask_rate=0.1,
-            swap_sentence_rate=1.0,
-        )
-
 for input in sentences[:20]:
     tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 2)
 
     token_input = np.asarray([[token_dict[token] for token in tokens]])
-    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(tokens))])
+    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(input) - 2)])
     mask_input = np.asarray([[0] * seq_len])
 
     output = model.predict([token_input, seg_input, mask_input])[0]
     output = np.argmax(output, axis=-1)[0]
 
-    print("INPUT: %s -- OUTPUT: %s" % ([token_dict[i] for i in input], [token_dict[o] for o in output]))
+    print("INPUT: %s -- OUTPUT: %s" % ([token_dict_rev[i] for i in input], [token_dict_rev[o] for o in output]))
 
