@@ -7,14 +7,14 @@ import keras
 import nltk
 import sys
 
-seq_len=126
+seq_len = 126
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[2])
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
 input_df = input_df[~input_df.duplicated(subset=['expression'])]
 input_df = input_df[input_df['expression'].str.len() > 0]
 input_df['expression'] = input_df['expression'].apply(tokenize)
 input_df = input_df[input_df['expression'].map(np.unique).map(len) > 2]
-input_df = input_df[input_df['expression'].map(len) <= seq_len//2]
+input_df = input_df[input_df['expression'].map(len) <= seq_len // 2]
 
 intents = input_df['intent'].values
 sentences = input_df['expression'].values
@@ -83,7 +83,10 @@ for input in sentences[:20]:
     mask_input = np.asarray([[0] * seq_len])
 
     output = model.predict([token_input, seg_input, mask_input])[0]
-    output = np.argmax(output, axis=-1)[0]
+    indices = np.argmax(output, axis=-1)[0]
+    probabilities = np.max(output, axis=-1)[0]
+    prob_mask = np.argwhere(probabilities > 0.5)
 
-    print("INPUT: %s -- OUTPUT: %s" % ([token_dict_rev[i] for i in input], [token_dict_rev[o] for o in output]))
-
+    print("INPUT: %s" % [token_dict_rev[i] for i in input])
+    print("OUTPUT: %s" % [token_dict_rev[o] for o in output[0]])
+    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in output[0][prob_mask]])
