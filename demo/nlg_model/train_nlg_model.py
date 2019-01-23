@@ -1,4 +1,5 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs_nlg
+from keras_bert.bert import TOKEN_CLS, TOKEN_SEP
 
 import pandas as pd
 import numpy as np
@@ -34,8 +35,7 @@ model = get_model(
     head_num=4,
     transformer_num=6,
     feed_forward_dim=256,
-    seq_len=seq_len,
-
+    seq_len=seq_len
 )
 model.summary()
 
@@ -56,7 +56,7 @@ def _generator():
 model.fit_generator(
     generator=_generator(),
     steps_per_epoch=1000,
-    epochs=100,
+    epochs=10,
     validation_data=_generator(),
     validation_steps=100,
     verbose=1,
@@ -64,6 +64,9 @@ model.fit_generator(
         keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
     ],
 )
+
+model.save('bert_nlg.keras')
+np.random.shuffle(sentences)
 
 test_data = gen_batch_inputs_nlg(
             sentences,
@@ -75,11 +78,11 @@ test_data = gen_batch_inputs_nlg(
         )
 
 for input in sentences[:20]:
-    tokens = ['[CLS]'] + input + ['[SEP]']
+    tokens = [TOKEN_CLS] + input + [TOKEN_SEP]
 
-    token_input = np.asarray([[token_dict[token] for token in tokens] + [0] * (512 - len(tokens))])
-    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (512 - len(tokens))])
-    mask_input = np.asarray([[0] * 512])
+    token_input = np.asarray([[token_dict[token] for token in tokens] + [0] * (seq_len - len(tokens))])
+    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(tokens))])
+    mask_input = np.asarray([[0] * seq_len])
 
     output = model.predict([token_input, seg_input, mask_input])[0]
     output = np.argmax(output, axis=-1)[0]
