@@ -9,7 +9,7 @@ import sys
 
 seq_len = 256
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
-tokenize_split = lambda e: [tokenize(s.trim()) for s in e.split('.')]
+tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
 input_df = input_df[~input_df.duplicated(subset=['expression'])]
