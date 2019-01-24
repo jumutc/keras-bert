@@ -71,15 +71,16 @@ def _generator():
             sentence_tuples,
             token_dict,
             token_list,
-            mask_rate=0.3,
+            mask_rate=0.15,
             seq_len=seq_len,
             swap_sentence_rate=1.0,
+            batch_size=32
         )
 
 
 model.fit_generator(
     generator=_generator(),
-    steps_per_epoch=1000,
+    steps_per_epoch=10000,
     epochs=100,
     validation_data=_generator(),
     validation_steps=100,
