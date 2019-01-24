@@ -143,6 +143,7 @@ def gen_batch_inputs(sentence_pairs,
                      mask_mask_rate=0.8,
                      mask_random_rate=0.1,
                      swap_sentence_rate=0.5,
+                     batch_size=128,
                      force_mask=True):
     """Generate a batch of inputs and outputs for training.
 
@@ -155,9 +156,15 @@ def gen_batch_inputs(sentence_pairs,
     :param mask_random_rate: The rate of replacing the token to a random word.
     :param swap_sentence_rate: The rate of swapping the second sentences.
     :param force_mask: At least one position will be masked.
+    :param batch_size: a batch_size to process
     :return: All the inputs and outputs.
     """
-    batch_size = len(sentence_pairs)
+    test_sample = np.random.permutation(np.arange(len(sentence_pairs)))
+    sentences = sentence_pairs[test_sample[:batch_size]]
+
+    if len(sentences) < batch_size:
+        batch_size = len(sentences)
+
     base_dict = get_base_dict()
     unknown_index = token_dict[TOKEN_UNK]
     # Generate sentence swapping mapping
@@ -239,7 +246,6 @@ def gen_batch_inputs_nlg(sentences,
     """
     test_sample = np.random.permutation(np.arange(len(sentences)))
     sentences = sentences[test_sample[:batch_size]]
-    intents = intents[test_sample[:batch_size]]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
@@ -299,4 +305,3 @@ def gen_batch_inputs_nlg(sentences,
     inputs = [np.asarray(x) for x in [token_inputs, segment_inputs, masked_inputs]]
     outputs = [np.asarray(np.expand_dims(x, axis=-1)) for x in [mlm_outputs, nsp_outputs]]
     return inputs, outputs
-
