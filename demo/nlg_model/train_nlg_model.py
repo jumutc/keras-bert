@@ -24,9 +24,9 @@ print("Expressions shape: %s" % expressions.shape)
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].map(len) <= seq_len]
 wiki_df = wiki_df[wiki_df[0].str.len() > 0]
-wiki_df[0] = input_df[0].apply(tokenize_split)
+wiki_df = wiki_df[0].apply(tokenize_split)
 
-sentence_tuples = input_df[0].values
+sentence_tuples = wiki_df.values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)
 
 token_dict = get_base_dict()  # A dict that contains some special tokens
