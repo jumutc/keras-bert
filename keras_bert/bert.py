@@ -246,6 +246,7 @@ def gen_batch_inputs_nlg(sentences,
 
     base_dict = get_base_dict()
     unknown_index = token_dict[TOKEN_UNK]
+
     # Generate sentence swapping mapping
     nsp_outputs = np.zeros((batch_size,))
     mapping = {}
@@ -257,9 +258,10 @@ def gen_batch_inputs_nlg(sentences,
             if intents[indices[i]] != intents[mapped[i]]:
                 nsp_outputs[indices[i]] = 1.0
         mapping = {indices[i]: mapped[i] for i in range(len(indices))}
+
     # Generate MLM
-    token_inputs, segment_inputs, masked_inputs = [], [], []
-    mlm_outputs = []
+    token_inputs, segment_inputs, masked_inputs, mlm_outputs = [], [], [], []
+
     for i in range(batch_size):
         first, second = sentences[i], sentences[mapping.get(i, i)]
         segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))

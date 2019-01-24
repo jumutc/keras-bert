@@ -77,7 +77,7 @@ model.save_weights('bert_nlg.hdf5')
 np.random.shuffle(sentences)
 
 for input in sentences[:20]:
-    tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 2)
+    tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 1) + [TOKEN_SEP]
 
     token_input = np.asarray([[token_dict[token] for token in tokens]])
     seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(input) - 2)])
@@ -90,4 +90,4 @@ for input in sentences[:20]:
 
     print("INPUT: %s" % input)
     print("OUTPUT: %s" % [token_dict_rev[o] for o in indices])
-    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[prob_mask]])
+    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[prob_mask].flatten()])
