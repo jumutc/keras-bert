@@ -23,13 +23,15 @@ print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].map(len) <= seq_len]
-wiki_df = wiki_df[wiki_df[0].str.len() > 0]
+wiki_df = wiki_df[wiki_df[0].str.len() > 10]
 wiki_df = wiki_df[0].apply(tokenize_split)
+wiki_df = wiki_df[wiki_df[0].map(len) > 1]
 
 sentence_tuples = wiki_df.values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)
 
 token_dict = get_base_dict()  # A dict that contains some special tokens
+token_dict_freq = dict()
 token_dict_rev = dict()
 
 for k, v in token_dict.items():
@@ -42,8 +44,12 @@ for sentence_tuple in sentence_tuples:
             if token not in token_dict:
                 index = len(token_dict)
                 token_dict[token] = index
+                token_dict_freq[token] = 1
                 token_dict_rev[index] = token
+            else:
+                token_dict_freq[token] += 1
 
+token_dict = {k: v for k, v in token_dict.items() if token_dict_freq[k] > 10}
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
 # Build & train the model
