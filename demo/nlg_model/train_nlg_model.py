@@ -36,6 +36,7 @@ token_dict_rev = dict()
 
 for k, v in token_dict.items():
     token_dict_rev[v] = k
+    token_dict_freq[k] = 1000
 
 # Build token dictionary
 for sentence_tuple in sentence_tuples:
@@ -49,7 +50,7 @@ for sentence_tuple in sentence_tuples:
             else:
                 token_dict_freq[token] += 1
 
-token_dict = {k: v for k, v in token_dict.items() if token_dict_freq[k] > 10}
+token_dict = {k: v for k, v in token_dict.items() if token_dict_freq.get(k, 0) > 10}
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
 # Build & train the model
