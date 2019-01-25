@@ -10,6 +10,7 @@ import sys
 seq_len = 128
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
 tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
+count_words = lambda x: np.sum([len(s) for s in x])
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
 input_df = input_df[~input_df.duplicated(subset=['expression'])]
@@ -24,7 +25,7 @@ print("Expressions shape: %s" % expressions.shape)
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].str.len() > 0]
 wiki_df = wiki_df[0].apply(tokenize_split)
-wiki_df = wiki_df[wiki_df.map(len) <= seq_len // 2]
+wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len // 2]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
 sentence_tuples = wiki_df.values
