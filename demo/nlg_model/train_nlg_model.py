@@ -24,8 +24,8 @@ expressions = input_df['expression'].values
 print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
-wiki_df = wiki_df[wiki_df[0].str.len() > 50]
-wiki_df = wiki_df[0].swifter.apply(tokenize_split)
+wiki_df = wiki_df[wiki_df[0].str.len() > 100]
+wiki_df = wiki_df[0].swifter.apply(tokenize_split, axis=0)
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
