@@ -74,7 +74,7 @@ def _generator():
             mask_rate=0.15,
             seq_len=seq_len,
             swap_sentence_rate=1.0,
-            batch_size=32
+            batch_size=16
         )
 
 
