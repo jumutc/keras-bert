@@ -1,6 +1,7 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs
 from keras_bert.bert import TOKEN_CLS, TOKEN_SEP, TOKEN_MASK, TOKEN_UNK
 
+import swifter
 import pandas as pd
 import numpy as np
 import keras
@@ -24,7 +25,7 @@ print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].str.len() > 50]
-wiki_df = wiki_df[0].apply(tokenize_split)
+wiki_df = wiki_df[0].swifter.apply(tokenize_split)
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
