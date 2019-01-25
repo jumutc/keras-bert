@@ -10,7 +10,7 @@ import sys
 
 seq_len = 128
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
-tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
+tokenize_split = lambda se: pd.Series([[tokenize(s.strip()) for s in e.split('.')] for e in se])
 count_words = lambda x: np.sum([len(s) for s in x])
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
@@ -25,11 +25,11 @@ print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].str.len() > 100]
-wiki_df = wiki_df[0].swifter.apply(tokenize_split, axis=0)
-wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
-wiki_df = wiki_df[wiki_df.map(len) > 1]
+wiki_df = wiki_df.swifter.apply(tokenize_split)
+wiki_df = wiki_df[wiki_df[0].map(count_words) <= seq_len]
+wiki_df = wiki_df[wiki_df[0].map(len) > 1]
 
-sentence_tuples = wiki_df.values
+sentence_tuples = wiki_df[0].values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)
 
 token_dict = get_base_dict()  # A dict that contains some special tokens
