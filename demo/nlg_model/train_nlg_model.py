@@ -7,7 +7,7 @@ import keras
 import nltk
 import sys
 
-seq_len = 256
+seq_len = 128
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
 tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
 
@@ -74,7 +74,7 @@ def _generator():
             mask_rate=0.15,
             seq_len=seq_len,
             swap_sentence_rate=1.0,
-            batch_size=16
+            batch_size=32
         )
 
 
