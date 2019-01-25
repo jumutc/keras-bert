@@ -25,7 +25,7 @@ print("Expressions shape: %s" % expressions.shape)
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df[wiki_df[0].str.len() > 0]
 wiki_df = wiki_df[0].apply(tokenize_split)
-wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len // 2]
+wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
 sentence_tuples = wiki_df.values
