@@ -1,7 +1,8 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs
 from keras_bert.bert import TOKEN_CLS, TOKEN_SEP, TOKEN_MASK, TOKEN_UNK
 from keras import backend as K
-from swifter import SeriesAccessor
+from dask import dataframe as dd
+from psutil import cpu_count
 
 import tensorflow as tf
 import pandas as pd
@@ -26,8 +27,9 @@ expressions = input_df['expression'].values
 print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
-wiki_df = SeriesAccessor(wiki_df.loc[wiki_df[0].str.len() > 50, 0])
-wiki_df = wiki_df._dask_apply(tokenize_split, convert_dtype=False)
+wiki_df = wiki_df.loc[wiki_df[0].str.len() > 50, 0]
+wiki_df = dd.from_pandas(wiki_df, npartitions=cpu_count() // 2, sort=False)\
+    .apply(tokenize_split, meta=wiki_df).compute(scheduler="processes")
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
