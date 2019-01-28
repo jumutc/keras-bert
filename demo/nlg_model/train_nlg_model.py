@@ -58,68 +58,59 @@ token_dict = {k: v for k, v in token_dict.items() if token_dict_freq.get(k, 0) >
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
 
-def _get_session():
+def _get_session(graph):
     tf_config = tf.ConfigProto(
         use_per_session_threads=True,
         allow_soft_placement=True
     )
     tf_config.gpu_options.allow_growth = True
-    return tf.Session(graph=tf.get_default_graph(), config=tf_config)
+    return tf.Session(graph=graph, config=tf_config)
 
 
-def _generator():
-    while True:
-        yield gen_batch_inputs(
-            sentence_tuples,
-            token_dict,
-            token_list,
-            mask_rate=0.15,
-            seq_len=seq_len,
-            swap_sentence_rate=1.0,
-            batch_size=16
+graph = tf.get_default_graph()
+
+with graph.as_default():
+    with _get_session(graph) as sess:
+        K.set_session(sess)
+
+        # Build & train the model
+        model = get_model(
+            token_num=len(token_dict),
+            embed_dim=256,
+            head_num=4,
+            transformer_num=6,
+            feed_forward_dim=256,
+            seq_len=seq_len
+        )
+        model.summary()
+
+        model.fit_generator(
+            generator=_generator(),
+            steps_per_epoch=1000,
+            epochs=500,
+            validation_data=_generator(),
+            validation_steps=100,
+            verbose=1,
+            callbacks=[
+                keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+            ],
         )
 
+        model.save_weights('bert_nlg.hdf5')
+        np.random.shuffle(expressions)
 
-K.set_session(_get_session())
+        for input in expressions[:20]:
+            tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 3) + [TOKEN_SEP]
 
-# Build & train the model
-model = get_model(
-    token_num=len(token_dict),
-    embed_dim=256,
-    head_num=4,
-    transformer_num=6,
-    feed_forward_dim=256,
-    seq_len=seq_len
-)
-model.summary()
+            token_input = np.asarray([[token_dict.get(token, TOKEN_UNK) for token in tokens]])
+            seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(input) - 2)])
+            mask_input = np.asarray([[0] * seq_len])
 
-model.fit_generator(
-    generator=_generator(),
-    steps_per_epoch=1000,
-    epochs=500,
-    validation_data=_generator(),
-    validation_steps=100,
-    verbose=1,
-    callbacks=[
-        keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
-    ],
-)
+            output = model.predict([token_input, seg_input, mask_input])[0]
+            indices = np.argmax(output, axis=-1)[0]
+            probabilities = np.max(output, axis=-1)[0]
+            prob_mask = np.argwhere(probabilities > 0.5)
 
-model.save_weights('bert_nlg.hdf5')
-np.random.shuffle(expressions)
-
-for input in expressions[:20]:
-    tokens = [TOKEN_CLS] + input + [TOKEN_SEP] + [TOKEN_MASK] * (seq_len - len(input) - 3) + [TOKEN_SEP]
-
-    token_input = np.asarray([[token_dict.get(token, TOKEN_UNK) for token in tokens]])
-    seg_input = np.asarray([[0] * (len(input) + 2) + [1] * (seq_len - len(input) - 2)])
-    mask_input = np.asarray([[0] * seq_len])
-
-    output = model.predict([token_input, seg_input, mask_input])[0]
-    indices = np.argmax(output, axis=-1)[0]
-    probabilities = np.max(output, axis=-1)[0]
-    prob_mask = np.argwhere(probabilities > 0.5)
-
-    print("INPUT: %s" % input)
-    print("OUTPUT: %s" % [token_dict_rev[o] for o in indices])
-    print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[prob_mask].flatten()])
+            print("INPUT: %s" % input)
+            print("OUTPUT: %s" % [token_dict_rev[o] for o in indices])
+            print("CLEANED OUTPUT: %s" % [token_dict_rev[o] for o in indices[prob_mask].flatten()])
