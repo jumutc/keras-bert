@@ -143,7 +143,7 @@ def gen_batch_inputs(sentence_pairs,
                      mask_mask_rate=0.8,
                      mask_random_rate=0.1,
                      swap_sentence_rate=0.5,
-                     batch_size=128,
+                     batch_size=32,
                      force_mask=True):
     """Generate a batch of inputs and outputs for training.
 
@@ -179,8 +179,8 @@ def gen_batch_inputs(sentence_pairs,
                 nsp_outputs[indices[i]] = 1.0
         mapping = {indices[i]: mapped[i] for i in range(len(indices))}
     # Generate MLM
-    token_inputs, segment_inputs, masked_inputs = [], [], []
-    mlm_outputs = []
+    token_inputs, segment_inputs, masked_inputs, mlm_outputs = [], [], [], []
+
     for i in range(batch_size):
         first, second = sentence_pairs[i][0], sentence_pairs[mapping.get(i, i)][1]
         segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
@@ -227,7 +227,7 @@ def gen_batch_inputs_nlg(sentences,
                          mask_mask_rate=0.8,
                          mask_random_rate=0.1,
                          swap_sentence_rate=1.0,
-                         batch_size=128,
+                         batch_size=32,
                          force_mask=True):
     """Generate a batch of inputs and outputs for training.
 
