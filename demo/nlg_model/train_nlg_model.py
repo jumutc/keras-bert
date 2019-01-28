@@ -26,9 +26,8 @@ expressions = input_df['expression'].values
 print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
-wiki_df = wiki_df[wiki_df[0].str.len() > 50]
-wiki_df = SeriesAccessor(wiki_df[0].astype(str), dask_threshold=-1)
-wiki_df = wiki_df._dask_apply(tokenize_split, convert_dtype=list)
+wiki_df = SeriesAccessor(wiki_df.loc[wiki_df[0].str.len() > 50, 0])
+wiki_df = wiki_df._dask_apply(tokenize_split, convert_dtype=False)
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
