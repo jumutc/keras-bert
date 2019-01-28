@@ -1,7 +1,9 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs
 from keras_bert.bert import TOKEN_CLS, TOKEN_SEP, TOKEN_MASK, TOKEN_UNK
+from keras import backend as K
 
 import swifter
+import tensorflow as tf
 import pandas as pd
 import numpy as np
 import keras
@@ -55,16 +57,14 @@ for sentence_tuple in sentence_tuples:
 token_dict = {k: v for k, v in token_dict.items() if token_dict_freq.get(k, 0) > 10}
 token_list = list(token_dict.keys())  # Used for selecting a random word
 
-# Build & train the model
-model = get_model(
-    token_num=len(token_dict),
-    embed_dim=256,
-    head_num=4,
-    transformer_num=6,
-    feed_forward_dim=256,
-    seq_len=seq_len
-)
-model.summary()
+
+def _get_session():
+    tf_config = tf.ConfigProto(
+        use_per_session_threads=True,
+        allow_soft_placement=True
+    )
+    tf_config.gpu_options.allow_growth = True
+    return tf.Session(tf.get_default_graph(), config=tf_config)
 
 
 def _generator():
@@ -79,6 +79,19 @@ def _generator():
             batch_size=16
         )
 
+
+K.set_session(_get_session())
+
+# Build & train the model
+model = get_model(
+    token_num=len(token_dict),
+    embed_dim=256,
+    head_num=4,
+    transformer_num=6,
+    feed_forward_dim=256,
+    seq_len=seq_len
+)
+model.summary()
 
 model.fit_generator(
     generator=_generator(),
