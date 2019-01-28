@@ -82,8 +82,8 @@ def _generator():
 
 model.fit_generator(
     generator=_generator(),
-    steps_per_epoch=10000,
-    epochs=100,
+    steps_per_epoch=1000,
+    epochs=500,
     validation_data=_generator(),
     validation_steps=100,
     verbose=1,
