@@ -1,7 +1,6 @@
 from keras_bert import get_base_dict, get_model, gen_batch_inputs
 from keras_bert.bert import TOKEN_CLS, TOKEN_SEP, TOKEN_MASK, TOKEN_UNK
-from dask.diagnostics import ProgressBar
-from dask import dataframe as dd
+from multiprocessing import Pool
 from keras import backend as K
 from psutil import cpu_count
 
@@ -13,8 +12,11 @@ import nltk
 import sys
 
 seq_len = 128
+n = cpu_count()
+
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
 tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
+tokenize_partition = lambda df: df.apply(tokenize_split)
 count_words = lambda x: np.sum([len(s) for s in x])
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
@@ -29,12 +31,15 @@ print("Expressions shape: %s" % expressions.shape)
 
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df.loc[wiki_df[0].str.len() > 50, 0]
-with ProgressBar():
-    wiki_df = dd.from_pandas(wiki_df, npartitions=cpu_count() // 2, sort=False) \
-        .map(tokenize_split, meta=pd.Series(dtype=wiki_df.dtype)) \
-        .compute(scheduler="processes")
-wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
+
+pool = Pool(processes=n)
+list_dfs = [wiki_df[i:i + n] for i in range(0, wiki_df.shape[0], n)]
+wiki_dfs = pool.map(tokenize_partition, list_dfs)
+pool.close()
+
+wiki_df = pd.concat(wiki_dfs)
 wiki_df = wiki_df[wiki_df.map(len) > 1]
+wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 
 sentence_tuples = wiki_df.values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)

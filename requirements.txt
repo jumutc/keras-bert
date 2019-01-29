@@ -1,7 +1,6 @@
 nltk
 pandas
 numpy
-dask
 psutil
 tensorflow
 Keras
