@@ -12,7 +12,7 @@ import nltk
 import sys
 
 seq_len = 128
-n = cpu_count()
+n = cpu_count() // 2
 
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
 count_words = lambda x: np.sum([len(s) for s in x])
@@ -36,7 +36,7 @@ wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df.loc[wiki_df[0].str.len() > 50, 0]
 
 pool = Pool(processes=n)
-list_dfs = [wiki_df[i:i + n] for i in range(0, wiki_df.shape[0], n)]
+list_dfs = [wiki_df[i:i + n].copy() for i in range(0, wiki_df.shape[0], n)]
 wiki_dfs = pool.map(tokenize_partition, list_dfs)
 pool.close()
 
