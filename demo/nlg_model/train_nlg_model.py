@@ -30,9 +30,9 @@ print("Expressions shape: %s" % expressions.shape)
 wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df.loc[wiki_df[0].str.len() > 50, 0]
 with ProgressBar():
-    wiki_df = dd.from_pandas(wiki_df, npartitions=100, sort=False)\
-        .map(tokenize_split, meta=pd.Series(dtype=wiki_df.dtype))\
-        .compute(scheduler="threads")
+    wiki_df = dd.from_pandas(wiki_df, npartitions=cpu_count() // 2, sort=False) \
+        .map(tokenize_split, meta=pd.Series(dtype=wiki_df.dtype)) \
+        .compute(scheduler="processes")
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
