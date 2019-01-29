@@ -182,7 +182,17 @@ def gen_batch_inputs(sentence_pairs,
     token_inputs, segment_inputs, masked_inputs, mlm_outputs = [], [], [], []
 
     for i in range(batch_size):
-        first, second = sentence_pairs[i][0], sentence_pairs[mapping.get(i, i)][1]
+        mapped_i = mapping.get(i, i)
+        len_first = len(sentence_pairs[i])
+        len_second = len(sentence_pairs[mapped_i])
+
+        if i == mapped_i:
+            offset = random.randint(0, len_first - 2)
+            first, second = sentence_pairs[i][offset], sentence_pairs[mapped_i][offset+1]
+        else:
+            first = sentence_pairs[i][random.randint(0, len_first - 1)]
+            second = sentence_pairs[mapped_i][random.randint(0, len_second - 1)]
+
         segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
