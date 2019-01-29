@@ -15,6 +15,7 @@ import sys
 seq_len = 128
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
 tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
+tokenize_partition = lambda df: df.apply(tokenize_split)
 count_words = lambda x: np.sum([len(s) for s in x])
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
@@ -31,7 +32,8 @@ wiki_df = pd.read_csv(sys.argv[2], error_bad_lines=False, header=None)
 wiki_df = wiki_df.loc[wiki_df[0].str.len() > 50, 0]
 with ProgressBar():
     wiki_df = dd.from_pandas(wiki_df, npartitions=cpu_count() // 2, sort=False)\
-        .map(tokenize_split, meta=pd.Series(dtype=wiki_df.dtype)).compute(scheduler="processes")
+        .map_partitions(tokenize_partition, meta=pd.Series(dtype=wiki_df.dtype))\
+        .compute(scheduler="processes")
 wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len]
 wiki_df = wiki_df[wiki_df.map(len) > 1]
 
