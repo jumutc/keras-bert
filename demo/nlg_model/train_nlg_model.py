@@ -15,9 +15,12 @@ seq_len = 128
 n = cpu_count()
 
 tokenize = lambda e: nltk.word_tokenize(e.lower(), sys.argv[3])
-tokenize_split = lambda e: [tokenize(s.strip()) for s in e.split('.')]
-tokenize_partition = lambda df: df.apply(tokenize_split)
 count_words = lambda x: np.sum([len(s) for s in x])
+
+
+def tokenize_partition(df):
+    return df.apply(lambda e: [tokenize(s.strip()) for s in e.split('.')])
+
 
 input_df = pd.read_csv(sys.argv[1], error_bad_lines=False)
 input_df = input_df[~input_df.duplicated(subset=['expression'])]
