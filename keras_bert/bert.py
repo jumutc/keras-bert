@@ -160,7 +160,7 @@ def gen_batch_inputs(sentence_pairs,
     :return: All the inputs and outputs.
     """
     sample = np.random.permutation(np.arange(len(sentence_pairs), dtype=int))
-    sentences = sentence_pairs[sample[:batch_size]]
+    sentences = sentence_pairs[sample[:batch_size].tolist()]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
@@ -255,7 +255,7 @@ def gen_batch_inputs_nlg(sentences,
     :return: All the inputs and outputs.
     """
     sample = np.random.permutation(np.arange(len(sentences), dtype=int))
-    sentences = sentences[sample[:batch_size]]
+    sentences = sentences[sample[:batch_size].tolist()]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
