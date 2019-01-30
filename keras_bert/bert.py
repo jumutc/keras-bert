@@ -159,8 +159,8 @@ def gen_batch_inputs(sentence_pairs,
     :param batch_size: a batch_size to process
     :return: All the inputs and outputs.
     """
-    test_sample = np.random.permutation(np.arange(len(sentence_pairs)))
-    sentences = sentence_pairs[test_sample[:batch_size]]
+    sample = np.random.permutation(np.arange(len(sentence_pairs), dtype=int))
+    sentences = sentence_pairs[sample[:batch_size]]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
@@ -254,8 +254,8 @@ def gen_batch_inputs_nlg(sentences,
     :param force_mask: At least one position will be masked.
     :return: All the inputs and outputs.
     """
-    test_sample = np.random.permutation(np.arange(len(sentences)))
-    sentences = sentences[test_sample[:batch_size]]
+    sample = np.random.permutation(np.arange(len(sentences), dtype=int))
+    sentences = sentences[sample[:batch_size]]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
