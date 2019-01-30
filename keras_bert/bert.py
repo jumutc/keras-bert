@@ -159,8 +159,8 @@ def gen_batch_inputs(sentence_pairs,
     :param batch_size: a batch_size to process
     :return: All the inputs and outputs.
     """
-    sample = np.random.permutation(np.arange(len(sentence_pairs), dtype=int))
-    sentences = sentence_pairs[sample[:batch_size].tolist()]
+    sample = np.random.permutation(np.arange(len(sentence_pairs)))
+    sentences = [sentence_pairs[i] for i in sample[:batch_size]]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
@@ -183,15 +183,15 @@ def gen_batch_inputs(sentence_pairs,
 
     for i in range(batch_size):
         mapped_i = mapping.get(i, i)
-        len_first = len(sentence_pairs[i])
-        len_second = len(sentence_pairs[mapped_i])
+        len_first = len(sentences[i])
+        len_second = len(sentences[mapped_i])
 
         if i == mapped_i:
             offset = random.randint(0, len_first - 2)
-            first, second = sentence_pairs[i][offset], sentence_pairs[mapped_i][offset+1]
+            first, second = sentences[i][offset], sentences[mapped_i][offset+1]
         else:
-            first = sentence_pairs[i][random.randint(0, len_first - 1)]
-            second = sentence_pairs[mapped_i][random.randint(0, len_second - 1)]
+            first = sentences[i][random.randint(0, len_first - 1)]
+            second = sentences[mapped_i][random.randint(0, len_second - 1)]
 
         segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
@@ -254,8 +254,8 @@ def gen_batch_inputs_nlg(sentences,
     :param force_mask: At least one position will be masked.
     :return: All the inputs and outputs.
     """
-    sample = np.random.permutation(np.arange(len(sentences), dtype=int))
-    sentences = sentences[sample[:batch_size].tolist()]
+    sample = np.random.permutation(np.arange(len(sentences)))
+    sentences = [sentences[i] for i in sample[:batch_size]]
 
     if len(sentences) < batch_size:
         batch_size = len(sentences)
