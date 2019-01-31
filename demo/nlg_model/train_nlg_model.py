@@ -42,7 +42,7 @@ pool.close()
 
 wiki_df = pd.concat(wiki_dfs)
 wiki_df = wiki_df[wiki_df.map(len) > 1]
-wiki_df = wiki_df[wiki_df.map(count_words) <= (seq_len - 10)]
+wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len//2]
 
 sentence_tuples = wiki_df.values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)
