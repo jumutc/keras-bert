@@ -194,7 +194,7 @@ def gen_batch_inputs(sentence_pairs,
         #     second = sentences[mapped_i][random.randint(0, len_second - 1)]
         #
         # segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
-        first, second = sentences[i], sentences[mapping.get(i, i)]
+        first, second = sentences[i][0], sentences[mapping.get(i, i)][1]
         segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
