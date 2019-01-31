@@ -194,11 +194,15 @@ def gen_batch_inputs(sentence_pairs,
             second = sentences[mapped_i][random.randint(0, len_second - 1)]
 
         segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
+        segment_input = segment_input[:seq_len]
+
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
         tokens += [TOKEN_PAD] * (seq_len - len(tokens))
+
         token_input, masked_input, mlm_output = [], [], []
         has_mask = False
+
         for token in tokens:
             mlm_output.append(token_dict.get(token, unknown_index))
             if token not in base_dict and random.random() < mask_rate:
