@@ -193,7 +193,7 @@ def gen_batch_inputs(sentence_pairs,
             first = sentences[i][random.randint(0, len_first - 1)]
             second = sentences[mapped_i][random.randint(0, len_second - 1)]
 
-        segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
+        segment_input = [0] * (len_first + 2) + [1] * (seq_len - (len_first + 2))
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
         tokens += [TOKEN_PAD] * (seq_len - len(tokens))
@@ -220,8 +220,6 @@ def gen_batch_inputs(sentence_pairs,
                 token_input.append(token_dict.get(token, unknown_index))
         if force_mask and not has_mask:
             masked_input[1] = 1
-        if len(segment_input) != seq_len:
-            print("Size: %d, segment: %s" % (len(segment_input), segment_input))
 
         token_inputs.append(token_input)
         masked_inputs.append(masked_input)
