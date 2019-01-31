@@ -182,18 +182,20 @@ def gen_batch_inputs(sentence_pairs,
     token_inputs, segment_inputs, masked_inputs, mlm_outputs = [], [], [], []
 
     for i in range(batch_size):
-        mapped_i = mapping.get(i, i)
-        len_first = len(sentences[i])
-        len_second = len(sentences[mapped_i])
-
-        if i == mapped_i:
-            offset = random.randint(0, len_first - 2)
-            first, second = sentences[i][offset], sentences[mapped_i][offset+1]
-        else:
-            first = sentences[i][random.randint(0, len_first - 1)]
-            second = sentences[mapped_i][random.randint(0, len_second - 1)]
-
-        segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
+        # mapped_i = mapping.get(i, i)
+        # len_first = len(sentences[i])
+        # len_second = len(sentences[mapped_i])
+        #
+        # if i == mapped_i:
+        #     offset = random.randint(0, len_first - 2)
+        #     first, second = sentences[i][offset], sentences[mapped_i][offset+1]
+        # else:
+        #     first = sentences[i][random.randint(0, len_first - 1)]
+        #     second = sentences[mapped_i][random.randint(0, len_second - 1)]
+        #
+        # segment_inputs.append([0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2)))
+        first, second = sentences[i], sentences[mapping.get(i, i)]
+        segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
         tokens += [TOKEN_PAD] * (seq_len - len(tokens))
@@ -222,7 +224,9 @@ def gen_batch_inputs(sentence_pairs,
             masked_input[1] = 1
         token_inputs.append(token_input)
         masked_inputs.append(masked_input)
+        segment_inputs.append(segment_input)
         mlm_outputs.append(mlm_output)
+
     inputs = [np.asarray(x) for x in [token_inputs, segment_inputs, masked_inputs]]
     outputs = [np.asarray(np.expand_dims(x, axis=-1)) for x in [mlm_outputs, nsp_outputs]]
     return inputs, outputs
