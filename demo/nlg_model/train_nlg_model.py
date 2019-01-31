@@ -7,6 +7,7 @@ from psutil import cpu_count
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import pickle
 import keras
 import nltk
 import sys
@@ -42,7 +43,7 @@ pool.close()
 
 wiki_df = pd.concat(wiki_dfs)
 wiki_df = wiki_df[wiki_df.map(len) > 1]
-wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len-3]
+wiki_df = wiki_df[wiki_df.map(count_words) <= seq_len - 3]
 
 sentence_tuples = wiki_df.values
 print("Wiki sentences shape: %s" % sentence_tuples.shape)
@@ -67,8 +68,12 @@ for sentence_tuple in sentence_tuples:
             else:
                 token_dict_freq[token] += 1
 
-token_dict = {k: v for k, v in token_dict.items() if token_dict_freq.get(k, 0) > 10}
-token_list = list(token_dict.keys())  # Used for selecting a random word
+token_keys = [k for k in token_dict.keys() if token_dict_freq[k] >= 10]
+token_dict = {k: i for i, k in enumerate(token_keys)}
+token_list = list(token_dict.keys())
+
+with open('bert_vocab.plk', 'wb') as f:
+    pickle.dump(token_dict, f)
 
 
 def _generator():
