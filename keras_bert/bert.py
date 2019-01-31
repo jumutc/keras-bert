@@ -288,6 +288,7 @@ def gen_batch_inputs_nlg(sentences,
     for i in range(batch_size):
         first, second = sentences[i], sentences[mapping.get(i, i)]
         segment_input = [0] * (len(first) + 2) + [1] * (seq_len - (len(first) + 2))
+        segment_input = segment_input[:seq_len]
         tokens = [TOKEN_CLS] + first + [TOKEN_SEP] + second + [TOKEN_SEP]
         tokens = tokens[:seq_len]
         tokens += [TOKEN_PAD] * (seq_len - len(tokens))
