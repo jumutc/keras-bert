@@ -101,7 +101,6 @@ model = get_model(
     embed_dim=256,
     head_num=4,
     transformer_num=6,
-    feed_forward_dim=256,
     seq_len=seq_len
 )
 model.summary()
