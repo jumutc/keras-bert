@@ -220,8 +220,8 @@ def gen_batch_inputs(sentence_pairs,
                 token_input.append(token_dict.get(token, unknown_index))
         if force_mask and not has_mask:
             masked_input[1] = 1
-        if len(segment_input) != seq_len or len(token_input) != seq_len or len(masked_input) != seq_len:
-            print(tokens)
+        if len(segment_input) != seq_len:
+            print("Size: %d, segment: %s" % (len(segment_input), segment_input))
 
         token_inputs.append(token_input)
         masked_inputs.append(masked_input)
