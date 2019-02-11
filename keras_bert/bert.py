@@ -91,7 +91,7 @@ def get_model(token_num,
     )(transformed)
     mlm_norm_layer = LayerNormalization(name='MLM-Norm')(mlm_dense_layer)
     mlm_pred_layer = EmbeddingSimilarity(name='MLM-Sim')([mlm_norm_layer, embed_weights])
-    masked_layer = Masked(name='MLM')([mlm_pred_layer, inputs[-1]])
+    # masked_layer = Masked(name='MLM')([mlm_pred_layer, inputs[-1]])
     extract_layer = Extract(index=0, name='Extract')(transformed)
     nsp_dense_layer = keras.layers.Dense(
         units=embed_dim,
@@ -103,7 +103,7 @@ def get_model(token_num,
         activation='softmax',
         name='NSP',
     )(nsp_dense_layer)
-    model = keras.models.Model(inputs=inputs, outputs=[masked_layer, nsp_pred_layer])
+    model = keras.models.Model(inputs=inputs, outputs=[mlm_pred_layer, nsp_pred_layer])
     model.compile(
         optimizer=keras.optimizers.Adam(lr=lr),
         loss=keras.losses.sparse_categorical_crossentropy,
