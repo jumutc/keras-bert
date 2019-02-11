@@ -103,7 +103,7 @@ def get_model(token_num,
         activation='softmax',
         name='NSP',
     )(nsp_dense_layer)
-    model = keras.models.Model(inputs=inputs, outputs=[mlm_pred_layer.output, nsp_pred_layer])
+    model = keras.models.Model(inputs=inputs, outputs=[mlm_pred_layer, nsp_pred_layer])
     model.compile(
         optimizer=keras.optimizers.Adam(lr=lr),
         loss=keras.losses.sparse_categorical_crossentropy,
