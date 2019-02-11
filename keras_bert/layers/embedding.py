@@ -118,5 +118,4 @@ class EmbeddingSimilarity(keras.layers.Layer):
 
     def call(self, inputs, mask=None, **kwargs):
         inputs, embeddings = inputs
-        outputs = K.bias_add(K.dot(inputs, K.transpose(embeddings)), self.bias)
-        return keras.layers.Lambda(keras.activations.softmax)(outputs)
+        return K.bias_add(K.dot(inputs, K.transpose(embeddings)), self.bias)

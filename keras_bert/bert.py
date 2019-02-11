@@ -90,7 +90,8 @@ def get_model(token_num,
         name='MLM-Dense',
     )(transformed)
     mlm_norm_layer = LayerNormalization(name='MLM-Norm')(mlm_dense_layer)
-    mlm_pred_layer = EmbeddingSimilarity(name='MLM-Sim')([mlm_norm_layer, embed_weights])
+    mlm_sim_layer = EmbeddingSimilarity(name='MLM-Sim')([mlm_norm_layer, embed_weights])
+    mlm_pred_layer = keras.layers.Softmax()(mlm_sim_layer)
     # masked_layer = Masked(name='MLM')([mlm_pred_layer, inputs[-1]])
     extract_layer = Extract(index=0, name='Extract')(transformed)
     nsp_dense_layer = keras.layers.Dense(
