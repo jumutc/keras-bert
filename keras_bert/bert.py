@@ -106,7 +106,7 @@ def get_model(token_num,
     )(nsp_dense_layer)
     model = keras.models.Model(inputs=inputs, outputs=[mlm_pred_layer, nsp_pred_layer])
     model.compile(
-        optimizer=keras.optimizers.Adam(lr=lr),
+        optimizer=keras.optimizers.Adam(lr=lr, epsilon=1e-6),
         loss=keras.losses.sparse_categorical_crossentropy,
         metrics=[],
     )
