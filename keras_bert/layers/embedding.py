@@ -36,14 +36,12 @@ def get_embedding(inputs, token_num, pos_num, embed_dim, dropout_rate=0.1, train
             output_dim=embed_dim,
             mask_zero=True,
             trainable=trainable,
-            embeddings_regularizer=keras.regularizers.l2(),
             name='Embedding-Token',
         )(inputs[0]),
         keras.layers.Embedding(
             input_dim=2,
             output_dim=embed_dim,
             trainable=trainable,
-            embeddings_regularizer=keras.regularizers.l2(),
             name='Embedding-Segment',
         )(inputs[1]),
     ]
@@ -54,7 +52,6 @@ def get_embedding(inputs, token_num, pos_num, embed_dim, dropout_rate=0.1, train
         output_dim=embed_dim,
         mode=PositionEmbedding.MODE_ADD,
         trainable=trainable,
-        embeddings_regularizer=keras.regularizers.l2(),
         name='Embedding-Position',
     )(embed_layer)
     if dropout_rate > 0.0:
