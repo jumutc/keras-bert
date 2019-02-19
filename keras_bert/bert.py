@@ -232,7 +232,7 @@ def gen_batch_inputs(sentence_pairs,
         mlm_outputs.append(mlm_output)
 
     inputs = [np.asarray(x) for x in [token_inputs, segment_inputs, masked_inputs]]
-    outputs = [np.asarray(np.expand_dims(x, axis=-1)) for x in [mlm_outputs, nsp_outputs]]
+    outputs = [np.expand_dims(np.asarray(x), axis=-1) for x in [mlm_outputs, nsp_outputs]]
     return inputs, outputs
 
 
